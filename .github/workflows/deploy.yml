@@ -1,0 +1,45 @@
+name: Deploy Proxmox VMs
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+
+      - name: Initialize Terraform
+        env:
+          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
+          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
+          PROXMOX_NODE: ${{ secrets.PROXMOX_NODE }}
+        run: terraform init
+
+      - name: Apply Terraform Configuration
+        env:
+          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
+          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
+          PROXMOX_NODE: ${{ secrets.PROXMOX_NODE }}
+          VM_COUNT: ${{ secrets.VM_COUNT }}
+          CORES: ${{ secrets.CORES }}
+          MEMORY: ${{ secrets.MEMORY }}
+          SOCKETS: ${{ secrets.SOCKETS }}
+          DISK_SIZES: ${{ secrets.DISK_SIZES }}
+          BRIDGE: ${{ secrets.BRIDGE }}
+          CLOUD_USER: ${{ secrets.CLOUD_USER }}
+          CLOUD_PASSWORD: ${{ secrets.CLOUD_PASSWORD }}
+          SSH_KEYS: ${{ secrets.SSH_KEYS }}
+          UBUNTU_ISO: ${{ secrets.UBUNTU_ISO }}
+        run: terraform apply -auto-approve
