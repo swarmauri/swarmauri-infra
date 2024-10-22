@@ -41,8 +41,8 @@ jobs:
           sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
           'mkdir -p /mnt/pve/local-ssd && mount /dev/sdb1 /mnt/pve/local-ssd'
 
-      - name: Update Second SSD
+      - name: Update Second SSD Storage on Proxmox
         run: |
           sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
-          'pvesm add dir local-ssd --path /mnt/pve/local-ssd --content images,rootdir'
+          'pvesm add dir local-ssd --path /mnt/pve/local-ssd --content images,iso,vztmpl,backup,rootdir,containers,snippets'
 
