@@ -1,0 +1,48 @@
+name: Proxmox VM Setup with Terraform
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  setup-proxmox-vms:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        env:
+          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
+          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
+          SSH_KEYS: ${{ secrets.SSH_KEYS }}
+        run: terraform apply -auto-approve
+
+      - name: Download Ubuntu ISO using local-exec
+        run: |
+          terraform apply -target=null_resource.download_ubuntu_iso -auto-approve
+
+      - name: Mount local-ssd storage
+        run: |
+          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
+          'mkdir -p /mnt/pve/local-ssd && mount /dev/sdb1 /mnt/pve/local-ssd'
+
+      - name: Update Second SSD
+        run: |
+          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
+          'pvesm add dir local-ssd --path /mnt/pve/local-ssd --content images,rootdir'
+
