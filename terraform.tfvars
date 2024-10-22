@@ -8,8 +8,8 @@ memory             = 8192
 sockets            = 1
 disk_sizes         = [50, 100]
 bridge             = "vmbr0"
+cloud_user         = "ubuntu"
+cloud_password     = "your-password"
+ssh_keys           = "ssh-rsa your-ssh-key"
+ubuntu_iso         = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-live-server-amd64.iso"
 
-cloud_user        = "ubuntu"
-cloud_password    = "your-password"
-ssh_keys          = "ssh-rsa your-ssh-key"
-ubuntu_iso        = "local:iso/ubuntu-22.04-live-server-amd64.iso"
