@@ -61,6 +61,4 @@ resource "proxmox_vm_qemu" "vm" {
   ciuser      = var.cloud_user
   sshkeys     = var.ssh_keys
 
-  # Optional: If you have an image that already includes packages and updates
-  # you might omit package-specific configurations here
 }
