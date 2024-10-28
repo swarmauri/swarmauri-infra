@@ -37,8 +37,14 @@ resource "proxmox_vm_qemu" "base_vm" {
   memory       = var.memory
   os_type      = "cloud-init"
   
-  # Use the storage pool ID instead of the filesystem path
-  ide2         = "local:iso/ubuntu-22.04-live-server-amd64.iso,media=cdrom"
+  # Attach ISO as a CD-ROM
+  disk {
+    slot      = 2                # Use an available slot for CD-ROM
+    storage   = "local"
+    file      = "iso/ubuntu-22.04-live-server-amd64.iso"
+    type      = "ide"
+    media     = "cdrom"
+  }
 
   network {
     model  = "virtio"
@@ -64,6 +70,7 @@ resource "proxmox_vm_qemu" "base_vm" {
     command = "qm stop ${self.id}"
   }
 }
+
 
 # Step 2: Clone the Base VM to Create Additional VMs
 resource "proxmox_vm_qemu" "vm" {
