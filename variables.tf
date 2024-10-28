@@ -44,11 +44,6 @@ variable "disk_sizes" {
   type        = list(number)
 }
 
-variable "bridge" {
-  description = "The network bridge for VMs."
-  type        = string
-}
-
 variable "cloud_user" {
   description = "The username for the cloud-init user."
   type        = string
