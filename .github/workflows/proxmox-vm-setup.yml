@@ -25,7 +25,6 @@ jobs:
       TF_VAR_cloud_password: ${{ secrets.CLOUD_PASSWORD }}
       TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
       TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
-      TF_VAR_PROXMOX_NODE: ${{ secrets.PROXMOX_NODE }}
 
     steps:
       - name: Checkout Code
