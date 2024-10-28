@@ -35,9 +35,6 @@ resource "proxmox_vm_qemu" "base_vm" {
   sockets      = var.sockets
   memory       = var.memory
   iso          = "/tmp/ubuntu-22.04-live-server-amd64.iso"
-  os_type      = "cloud-init"
-  ciuser       = var.cloud_user
-  sshkeys      = var.ssh_keys
 
   network {
     model  = "virtio"
