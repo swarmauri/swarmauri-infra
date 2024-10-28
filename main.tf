@@ -35,13 +35,16 @@ resource "proxmox_vm_qemu" "base_vm" {
   sockets      = var.sockets
   memory       = var.memory
   os_type      = "cloud-init"
+
+
   
+
   # Attach ISO as a CD-ROM
   disk {
     slot      = 2                # Use an available slot for CD-ROM
     storage   = "local"
-    file      = "iso/ubuntu-22.04-live-server-amd64.iso"
     type      = "ide"
+    iso          = "local:iso/ubuntu-22.04-live-server-amd64.iso"  # Assuming it's in the "local" storage pool
     media     = "cdrom"
     size      = "2G"
   }
