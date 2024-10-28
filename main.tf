@@ -15,17 +15,17 @@ provider "proxmox" {
   pm_debug             = true
 }
 
-# Download and upload the Ubuntu ISO to Proxmox storage
-resource "null_resource" "download_and_upload_ubuntu_iso" {
+# Download the Ubuntu ISO directly into the Proxmox ISO storage directory
+resource "null_resource" "download_ubuntu_iso" {
   provisioner "local-exec" {
-    command = "curl -L -o /var/lib/vz/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
+    command = "curl -L -o /var/lib/vz/template/iso/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
   }
-
 
   triggers = {
     ubuntu_iso = var.ubuntu_iso
   }
 }
+
 
 
 # Step 1: Create the Base VM (used as a template for cloning)
