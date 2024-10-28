@@ -43,16 +43,18 @@ resource "proxmox_vm_qemu" "vm" {
   }
 
 
+  # OS disk with unit
   disk {
     slot      = 0
-    size      = element(var.disk_sizes, 0)
+    size      = var.disk_sizes[0]  # Reference directly with units
     type      = "scsi"
-    storage   = "local-lvm"  # Storage for the OS disk
+    storage   = "local-lvm"
   }
 
+  # Additional disk with unit
   disk {
     slot      = 1
-    size      = element(var.disk_sizes, 1)
+    size      = var.disk_sizes[1]  # Reference directly with units
     type      = "scsi"
     storage   = "local"  # Change to an existing storage name in Proxmox
   }
