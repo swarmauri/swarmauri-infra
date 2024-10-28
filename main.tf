@@ -60,21 +60,21 @@ resource "proxmox_vm_qemu" "vm" {
     slot      = 1
     size      = element(var.disk_sizes, 1)
     type      = "scsi"
-    storage   = "local-ssd"  # Storage for application data
+    storage   = proxmox_storage.local_ssd.storage  # Reference to local-ssd storage
   }
 
   os_type     = "cloud-init"
   iso         = "/tmp/ubuntu-22.04-live-server-amd64.iso"  # Reference to the downloaded ISO
 
-  provisioner "cloud-init" {
-    user_data = <<-EOF
+  # Define the `cloud-init` configuration for the VM
+  ciuser      = var.cloud_user
+  cipassword  = var.cloud_password  # Optional: If a password is needed
+  sshkeys     = var.ssh_keys  # Cloud-init SSH keys
+  
+  # Other optional cloud-init settings (unattended upgrades, custom scripts, etc.)
+  cicustom = {
+    "user_data" = <<-EOF
       #cloud-config
-      users:
-        - name: ${var.cloud_user}
-          ssh-authorized-keys:
-            - ${var.ssh_keys}
-          sudo: ['ALL=(ALL) NOPASSWD:ALL']
-          groups: sudo
       package_update: true
       packages:
         - git
