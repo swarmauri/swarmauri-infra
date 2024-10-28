@@ -21,28 +21,55 @@ jobs:
         with:
           terraform_version: 1.4.6
 
+      # Pass environment variables to Terraform for use in .tf files
       - name: Terraform Init
+        env:
+          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
+          TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
+          TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
+          TF_VAR_proxmox_node: ${{ secrets.PROXMOX_NODE }}
+          TF_VAR_vm_count: 3
+          TF_VAR_cores: 4
+          TF_VAR_memory: 8192
+          TF_VAR_sockets: 1
+          TF_VAR_disk_sizes: "[50, 100]"
+          TF_VAR_bridge: "vmbr0"
+          TF_VAR_cloud_user: "ubuntu"
+          TF_VAR_cloud_password: ${{ secrets.CLOUD_PASSWORD }}
+          TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
+          TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-live-server-amd64.iso"
         run: terraform init
 
       - name: Terraform Apply
         env:
-          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
-          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
-          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
-          SSH_KEYS: ${{ secrets.SSH_KEYS }}
+          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
+          TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
+          TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
+          TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
         run: terraform apply -auto-approve
 
+      # Separate step to download the Ubuntu ISO if required by the Terraform configuration
       - name: Download Ubuntu ISO using local-exec
-        run: |
-          terraform apply -target=null_resource.download_ubuntu_iso -auto-approve
+        env:
+          TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-live-server-amd64.iso"
+        run: terraform apply -target=null_resource.download_ubuntu_iso -auto-approve
 
+      # SSH command to mount local-ssd storage on Proxmox
       - name: Mount local-ssd storage
+        env:
+          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
+          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
         run: |
-          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
+          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }}" \
           'mkdir -p /mnt/pve/local-ssd && mount /dev/sdb1 /mnt/pve/local-ssd'
 
+      # Adding the SSD storage configuration to Proxmox using SSH
       - name: Update Second SSD Storage on Proxmox
+        env:
+          PROXMOX_USER: ${{ secrets.PROXMOX_USER }}
+          PROXMOX_PASSWORD: ${{ secrets.PROXMOX_PASSWORD }}
+          PROXMOX_API_URL: ${{ secrets.PROXMOX_API_URL }}
         run: |
-          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }} \
+          sshpass -p "${{ secrets.PROXMOX_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.PROXMOX_USER }}@${{ secrets.PROXMOX_API_URL }}" \
           'pvesm add dir local-ssd --path /mnt/pve/local-ssd --content images,iso,vztmpl,backup,rootdir,containers,snippets'
-
