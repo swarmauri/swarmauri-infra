@@ -11,6 +11,21 @@ on:
 jobs:
   setup-proxmox-vms:
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
+      TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
+      TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
+      TF_VAR_proxmox_node: ${{ secrets.PROXMOX_NODE }}
+      TF_VAR_vm_count: 3
+      TF_VAR_cores: 4
+      TF_VAR_memory: 8192
+      TF_VAR_sockets: 1
+      TF_VAR_disk_sizes: "[50, 100]"
+      TF_VAR_bridge: "vmbr0"
+      TF_VAR_cloud_user: "ubuntu"
+      TF_VAR_cloud_password: ${{ secrets.CLOUD_PASSWORD }}
+      TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
+      TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-live-server-amd64.iso"
 
     steps:
       - name: Checkout Code
@@ -23,29 +38,10 @@ jobs:
 
       # Pass environment variables to Terraform for use in .tf files
       - name: Terraform Init
-        env:
-          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
-          TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
-          TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
-          TF_VAR_proxmox_node: ${{ secrets.PROXMOX_NODE }}
-          TF_VAR_vm_count: 3
-          TF_VAR_cores: 4
-          TF_VAR_memory: 8192
-          TF_VAR_sockets: 1
-          TF_VAR_disk_sizes: "[50, 100]"
-          TF_VAR_bridge: "vmbr0"
-          TF_VAR_cloud_user: "ubuntu"
-          TF_VAR_cloud_password: ${{ secrets.CLOUD_PASSWORD }}
-          TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
-          TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-live-server-amd64.iso"
+
         run: terraform init
 
       - name: Terraform Apply
-        env:
-          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
-          TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
-          TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
-          TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
         run: terraform apply -auto-approve
 
       # Separate step to download the Ubuntu ISO if required by the Terraform configuration
