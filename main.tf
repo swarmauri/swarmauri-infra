@@ -2,20 +2,20 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "2.9.11"  # Specify the appropriate version
+      version = "2.9.11"
     }
   }
 }
 
 provider "proxmox" {
-  pm_api_url    = var.proxmox_api_url
-  pm_api_token_id = var.proxmox_user
-  pm_api_token_secret = var.proxmox_password
-  pm_tls_insecure = false
-  pm_debug = true
+  pm_api_url           = var.proxmox_api_url
+  pm_api_token_id      = var.proxmox_user
+  pm_api_token_secret  = var.proxmox_password
+  pm_tls_insecure      = false
+  pm_debug             = true
 }
 
-# Null Resource to Download the Ubuntu ISO
+# Download the Ubuntu ISO (only run once)
 resource "null_resource" "download_ubuntu_iso" {
   provisioner "local-exec" {
     command = <<EOT
@@ -28,41 +28,75 @@ resource "null_resource" "download_ubuntu_iso" {
   }
 }
 
-# Creating VMs
+# Step 1: Create the Base VM (used as a template for cloning)
+resource "proxmox_vm_qemu" "base_vm" {
+  name         = "ubuntu-base-vm"
+  target_node  = var.proxmox_node
+  cores        = var.cores
+  sockets      = var.sockets
+  memory       = var.memory
+  iso          = "/tmp/ubuntu-22.04-live-server-amd64.iso"
+  os_type      = "cloud-init"
+  ciuser       = var.cloud_user
+  sshkeys      = var.ssh_keys
+
+  network {
+    model  = "virtio"
+    bridge = var.bridge
+  }
+
+  disk {
+    slot      = 0
+    size      = var.disk_sizes[0]
+    type      = "scsi"
+    storage   = "local-lvm"
+  }
+
+  disk {
+    slot      = 1
+    size      = var.disk_sizes[1]
+    type      = "scsi"
+    storage   = "local"
+  }
+
+  provisioner "local-exec" {
+    # Shutdown the base VM to prepare it for cloning
+    command = "qm stop ${self.id}"
+  }
+}
+
+# Step 2: Clone the Base VM to Create Additional VMs
 resource "proxmox_vm_qemu" "vm" {
   count        = var.vm_count
   name         = "ubuntu-vm-${count.index + 100}"
   target_node  = var.proxmox_node
+  clone        = proxmox_vm_qemu.base_vm.id  # Clone from the base VM
+
   cores        = var.cores
   sockets      = var.sockets
   memory       = var.memory
 
   network {
     model  = "virtio"
-    bridge = "vmbr0"  
+    bridge = var.bridge
   }
 
-
-  # OS disk with unit
+  # OS disk (no need to redefine size or storage as it’s inherited from the clone)
   disk {
     slot      = 0
-    size      = var.disk_sizes[0]  # Reference directly with units
+    size      = var.disk_sizes[0]
     type      = "scsi"
     storage   = "local-lvm"
   }
 
-  # Additional disk with unit
   disk {
     slot      = 1
-    size      = var.disk_sizes[1]  # Reference directly with units
+    size      = var.disk_sizes[1]
     type      = "scsi"
-    storage   = "local"  # Change to an existing storage name in Proxmox
+    storage   = "local"
   }
 
   os_type     = "cloud-init"
-  iso         = "/tmp/ubuntu-22.04-live-server-amd64.iso"
-
   ciuser      = var.cloud_user
   sshkeys     = var.ssh_keys
-
 }
