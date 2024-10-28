@@ -18,15 +18,14 @@ provider "proxmox" {
 # Download the Ubuntu ISO (only run once)
 resource "null_resource" "download_ubuntu_iso" {
   provisioner "local-exec" {
-    command = <<EOT
-      curl -L -o /tmp/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}
-    EOT
+    command = "curl -L -o /tmp/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
   }
 
   triggers = {
     ubuntu_iso = var.ubuntu_iso
   }
 }
+
 
 # Step 1: Create the Base VM (used as a template for cloning)
 resource "proxmox_vm_qemu" "base_vm" {
