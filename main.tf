@@ -35,6 +35,12 @@ resource "proxmox_vm_qemu" "vm" {
   sockets      = var.sockets
   memory       = var.memory
 
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"  
+  }
+
+
   disk {
     slot      = 0
     size      = element(var.disk_sizes, 0)
