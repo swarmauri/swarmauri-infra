@@ -42,7 +42,7 @@ resource "proxmox_vm_qemu" "base_vm" {
 
   network {
     model  = "virtio"
-    bridge = var.bridge
+    bridge = "vmbr0"
   }
 
   disk {
@@ -78,7 +78,7 @@ resource "proxmox_vm_qemu" "vm" {
 
   network {
     model  = "virtio"
-    bridge = var.bridge
+    bridge = "vmbr0"
   }
 
   # OS disk (no need to redefine size or storage as it’s inherited from the clone)
