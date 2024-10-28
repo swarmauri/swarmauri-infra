@@ -11,6 +11,7 @@ variable "proxmox_user" {
 variable "proxmox_password" {
   description = "The password for Proxmox."
   type        = string
+  sensitive   = true  # Keeps the password hidden in outputs
 }
 
 variable "proxmox_node" {
@@ -52,6 +53,13 @@ variable "cloud_user" {
   description = "The username for the cloud-init user."
   type        = string
 }
+
+variable "cloud_password" {
+  description = "Password for the cloud-init user."
+  type        = string
+  sensitive   = true  # Keeps the password hidden in outputs
+}
+
 
 variable "ssh_keys" {
   description = "SSH public key for cloud-init user."
