@@ -15,21 +15,6 @@ provider "proxmox" {
   pm_debug            = true
 }
 
-# Variables
-variable "proxmox_api_url" {}
-variable "proxmox_user" {}
-variable "proxmox_password" {}
-variable "proxmox_node" {}
-variable "cores" { default = 2 }
-variable "sockets" { default = 1 }
-variable "memory" { default = 2048 }
-variable "disk_sizes" { default = ["10G", "20G"] }
-variable "vm_count" { default = 3 }
-variable "cloud_user" { default = "ubuntu" }
-variable "ssh_keys" {}
-variable "ubuntu_iso" {
-  default = "https://releases.ubuntu.com/22.04/ubuntu-22.04-live-server-amd64.iso"
-}
 
 # Step 1: Download the Ubuntu ISO
 resource "null_resource" "download_ubuntu_iso" {
