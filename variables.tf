@@ -41,8 +41,8 @@ variable "sockets" {
 
 variable "disk_sizes" {
   description = "List of disk sizes in GB for each VM, with units."
-  type        = list(string)
-  default     = ["50G", "100G"]  # Default values with "G" included
+  type        = list(number)
+  default     = [50, 100]  # Default values with "G" included
 }
 
 variable "cloud_user" {
