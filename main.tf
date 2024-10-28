@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "2.9.11"
+      version = "2.9.11"  # Ensure compatibility with your setup
     }
   }
 }
@@ -16,6 +16,7 @@ provider "proxmox" {
 }
 
 
+
 # Step 1: Download the Ubuntu ISO
 resource "null_resource" "download_ubuntu_iso" {
   provisioner "local-exec" {
@@ -26,7 +27,7 @@ resource "null_resource" "download_ubuntu_iso" {
   }
 }
 
-# Step 2: Create the Base VM (used as a template for cloning)
+# Step 2: Create the Base VM Template
 resource "proxmox_vm_qemu" "base_vm" {
   name         = "ubuntu-base-vm"
   target_node  = var.proxmox_node
@@ -35,15 +36,15 @@ resource "proxmox_vm_qemu" "base_vm" {
   memory       = var.memory
   os_type      = "cloud-init"
 
-  iso          = "local:iso/ubuntu-22.04-live-server-amd64.iso"  # Assuming it's in the "local" storage pool
-
   # Attach ISO as a CD-ROM for base installation
-  disk {
-    slot      = 2
-    storage   = "local"
-    type      = "ide"
-    media     = "cdrom"
-    size      = "2G"
+  disks {
+    ide {
+      ide2 {
+        cdrom {
+          iso = "local:iso/ubuntu-22.04-live-server-amd64.iso"
+        }
+      }
+    }
   }
 
   network {
@@ -51,75 +52,30 @@ resource "proxmox_vm_qemu" "base_vm" {
     bridge = "vmbr0"
   }
 
-  disk {
-    slot      = 0
-    size      = var.disk_sizes[0]
-    type      = "scsi"
-    storage   = "local-lvm"
+  disks {
+    scsi {
+      scsi0 {
+        size    = var.disk_sizes[0]
+        storage = "local-lvm"
+      }
+      scsi1 {
+        size    = var.disk_sizes[1]
+        storage = "local"
+      }
+    }
   }
 
-  disk {
-    slot      = 1
-    size      = var.disk_sizes[1]
-    type      = "scsi"
-    storage   = "local"
-  }
-
-  # Stop the base VM after creation for cloning
   provisioner "local-exec" {
     command = "qm stop ${self.id}"
   }
 }
 
-# Step 3: Define the Cloud-Init Disk
-locals {
-  vm_name          = "ubuntu-vm"
-  pve_node         = var.proxmox_node
-  iso_storage_pool = "local"
-}
-
-resource "proxmox_cloud_init_disk" "ci" {
-  name      = local.vm_name
-  pve_node  = local.pve_node
-  storage   = local.iso_storage_pool
-
-  meta_data = yamlencode({
-    instance_id    = sha1(local.vm_name)
-    local-hostname = local.vm_name
-  })
-
-  user_data = <<-EOT
-  #cloud-config
-  users:
-    - default
-  ssh_authorized_keys:
-    - ${var.ssh_keys}
-  EOT
-
-  network_config = yamlencode({
-    version = 1
-    config = [{
-      type = "physical"
-      name = "eth0"
-      subnets = [{
-        type            = "static"
-        address         = "192.168.1.100/24"
-        gateway         = "192.168.1.1"
-        dns_nameservers = [
-          "1.1.1.1",
-          "8.8.8.8"
-        ]
-      }]
-    }]
-  })
-}
-
-# Step 4: Clone the Base VM to Create Additional VMs
+# Step 3: Clone the Base VM with Cloud-Init Disk
 resource "proxmox_vm_qemu" "vm" {
   count        = var.vm_count
   name         = "ubuntu-vm-${count.index + 100}"
   target_node  = var.proxmox_node
-  clone        = proxmox_vm_qemu.base_vm.id  # Clone from the base VM
+  clone        = proxmox_vm_qemu.base_vm.id
 
   cores        = var.cores
   sockets      = var.sockets
@@ -133,23 +89,30 @@ resource "proxmox_vm_qemu" "vm" {
     bridge = "vmbr0"
   }
 
-  # OS disk (inherited from the clone)
-  disk {
-    slot      = 0
-    size      = var.disk_sizes[0]
-    type      = "scsi"
-    storage   = "local-lvm"
+  # Attach a Cloud-Init disk as a CD-ROM
+  disks {
+    scsi {
+      scsi0 {
+        cdrom {
+          iso = "local:cloudinit"
+        }
+      }
+    }
   }
 
-  disk {
-    slot      = 1
-    size      = var.disk_sizes[1]
-    type      = "scsi"
-    storage   = "local"
-  }
+  # Set static IP and gateway through cloud-init IP configuration
+  ipconfig0 = "ip=192.168.1.${100 + count.index}/24,gw=192.168.1.1"
 
-  # Attach the cloud-init disk as a CD-ROM for configuration
-  cdrom {
-    file = proxmox_cloud_init_disk.ci.id  # Attach the generated cloud-init disk
+  disks {
+    scsi {
+      scsi1 {
+        size    = var.disk_sizes[0]
+        storage = "local-lvm"
+      }
+      scsi2 {
+        size    = var.disk_sizes[1]
+        storage = "local"
+      }
+    }
   }
 }
