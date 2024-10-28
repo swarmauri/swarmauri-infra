@@ -1,4 +1,4 @@
-terraform {
+ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
@@ -44,6 +44,7 @@ resource "proxmox_vm_qemu" "base_vm" {
     file      = "iso/ubuntu-22.04-live-server-amd64.iso"
     type      = "ide"
     media     = "cdrom"
+    size      = "2G"
   }
 
   network {
