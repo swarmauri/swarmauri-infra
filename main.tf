@@ -18,9 +18,8 @@ provider "proxmox" {
 # Download the Ubuntu ISO directly into the Proxmox ISO storage directory
 resource "null_resource" "download_ubuntu_iso" {
   provisioner "local-exec" {
-    command = "curl -L -o /var/lib/vz/template/iso/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
+    command = "sudo curl -L -o /var/lib/vz/template/iso/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
   }
-
   triggers = {
     ubuntu_iso = var.ubuntu_iso
   }
