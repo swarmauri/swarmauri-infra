@@ -34,7 +34,10 @@ resource "proxmox_vm_qemu" "base_vm" {
   cores        = var.cores
   sockets      = var.sockets
   memory       = var.memory
-  iso          = "/tmp/ubuntu-22.04-live-server-amd64.iso"
+  os_type      = "cloud-init"
+  
+  # Use the storage pool ID instead of the filesystem path
+  ide2         = "local:iso/ubuntu-22.04-live-server-amd64.iso,media=cdrom"
 
   network {
     model  = "virtio"
@@ -55,8 +58,8 @@ resource "proxmox_vm_qemu" "base_vm" {
     storage   = "local"
   }
 
+  # No cloud-init parameters here, only in clones
   provisioner "local-exec" {
-    # Shutdown the base VM to prepare it for cloning
     command = "qm stop ${self.id}"
   }
 }
