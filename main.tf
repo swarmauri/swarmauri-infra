@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "2.9.11"  # Ensure compatibility with your setup
+      version = "3.0.1-rc4"  # Ensure compatibility with your setup
     }
   }
 }
