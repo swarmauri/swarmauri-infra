@@ -15,10 +15,18 @@ provider "proxmox" {
   pm_debug             = true
 }
 
-# Download the Ubuntu ISO (only run once)
-resource "null_resource" "download_ubuntu_iso" {
+# Download and upload the Ubuntu ISO to Proxmox storage
+resource "null_resource" "download_and_upload_ubuntu_iso" {
+  # Step 1: Download the ISO to a local path on the machine running Terraform
   provisioner "local-exec" {
-    command = "curl -L -o /tmp/ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
+    command = "curl -L -o ubuntu-22.04-live-server-amd64.iso ${var.ubuntu_iso}"
+  }
+
+  # Step 2: Upload the ISO to Proxmox's 'local' storage
+  provisioner "local-exec" {
+    command = <<EOT
+      sshpass -p '${var.proxmox_password}' scp -o StrictHostKeyChecking=no ubuntu-22.04-live-server-amd64.iso ${var.proxmox_user}@${var.proxmox_host}:/var/lib/vz/template/iso/
+    EOT
   }
 
   triggers = {
