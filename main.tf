@@ -26,15 +26,6 @@ resource "null_resource" "download_ubuntu_iso" {
   }
 }
 
-# Create the local-ssd storage
-resource "proxmox_storage" "local_ssd" {
-  id         = "local-ssd"
-  storage    = "local-ssd"
-  type       = "dir"
-  path       = "/mnt/pve/local-ssd"  # Path where the storage will be mounted
-  content    = ["images"]  # Specify the type of content, e.g., "images", "rootdir", etc.
-}
-
 # Creating VMs
 resource "proxmox_vm_qemu" "vm" {
   count        = var.vm_count
