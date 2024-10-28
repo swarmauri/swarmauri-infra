@@ -51,8 +51,9 @@ resource "proxmox_vm_qemu" "vm" {
     slot      = 1
     size      = element(var.disk_sizes, 1)
     type      = "scsi"
-    storage   = proxmox_storage.local_ssd.storage  # Reference to local-ssd storage
+    storage   = "local-ssd"  # Change this to an existing storage name
   }
+
 
   os_type     = "cloud-init"
   iso         = "/tmp/ubuntu-22.04-live-server-amd64.iso"  # Reference to the downloaded ISO
