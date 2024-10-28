@@ -65,4 +65,6 @@ variable "ssh_keys" {
 variable "ubuntu_iso" {
   description = "The link to the Ubuntu ISO."
   type        = string
+  default     = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 }
+
