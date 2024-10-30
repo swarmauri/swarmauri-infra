@@ -28,13 +28,13 @@ variable "template_id" {
 }
 
 variable "vm_count" {
-  default     = 3
+  default     = 4
   description = "Number of VMs to create from the template"
 }
 
 variable "vm_ids" {
   type        = list(number)
-  default     = [100, 101, 102]
+  default     = [100, 101, 102, 103]
   description = "List of unique VM IDs for each VM clone"
 }
 
@@ -46,13 +46,13 @@ variable "vm_names" {
 
 variable "ips" {
   type        = list(string)
-  default     = ["149.255.38.122/28", "149.255.38.123/28", "149.255.38.124/28"]
+  default     = ["149.255.38.122/28", "149.255.38.123/28", "149.255.38.124/28", "149.255.38.125/28"]
   description = "List of unique IP addresses for each VM"
 }
 
 variable "gateways" {
   type        = list(string)
-  default     = ["172.81.41.129", "172.81.41.129", "172.81.41.129"]
+  default     = ["172.81.41.129", "172.81.41.129", "172.81.41.129", "172.81.41.129"]
   description = "List of gateways for each VM"
 }
 
