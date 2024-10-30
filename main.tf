@@ -66,6 +66,7 @@ EOF
 # Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
 resource "local_file" "cloud_init_user_data_file" {
   count    = var.vm_count
+  content  = "content"
   filename = "test-filename.cfg"
 }
 
