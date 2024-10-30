@@ -46,7 +46,7 @@ variable "vm_names" {
 
 variable "ips" {
   type        = list(string)
-  default     = ["149.255.38.122/28", "149.255.38.123/28", "149.255.38.124/28", "149.255.38.125/28"]
+  default     = ["149.255.38.123/28", "149.255.38.124/28", "149.255.38.125/28", "149.255.38.126/28"]
   description = "List of unique IP addresses for each VM"
 }
 
