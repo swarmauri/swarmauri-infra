@@ -66,6 +66,7 @@ EOF
 # Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
 resource "local_file" "cloud_init_user_data_file" {
   count    = var.vm_count
+  filename = "test-filename.cfg"
 }
 
 resource "null_resource" "cloud_init_config_files" {
@@ -129,8 +130,7 @@ resource "proxmox_vm_qemu" "preprovision-test" {
     bridge = "vmbr1"
   }
   disk {
-    id           = 0
-    slot         = "wrong"
+    slot         = "scsi0"
     type         = "virtio"
     storage      = "local-lvm"
     size         = "4G"
