@@ -102,11 +102,6 @@ resource "proxmox_vm_qemu" "vm" {
     scsi {
       scsi1 {
         size    = var.disk_sizes[0]
-        storage = "local-lvm"
-      }
-      scsi2 {
-        size    = var.disk_sizes[1]
-        storage = "local"
       }
     }
   }
