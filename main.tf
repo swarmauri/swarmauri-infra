@@ -30,7 +30,7 @@ resource "null_resource" "create_template" {
       "qm set ${var.template_id} --ide2 local-ssd:cloudinit",
       "qm set ${var.template_id} --boot order=scsi0",
       "qm set ${var.template_id} --serial0 socket --vga serial0",
-      "qm set ${var.template_id} --cicustom 'user=local-back:snippets/template-cloud-init.yml'",
+      "qm set ${var.template_id} --cicustom 'user=local-ssd:snippets/template-cloud-init.yml'",
       "qm template ${var.template_id}"
     ]
   }
