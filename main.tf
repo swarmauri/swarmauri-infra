@@ -1,12 +1,10 @@
-provider "null" {}
-
 resource "null_resource" "download_iso" {
   provisioner "remote-exec" {
     connection {
-      type        = "ssh"
-      host        = var.proxmox_ip
-      user        = var.proxmox_user
-      private_key = var.proxmox_private_key
+      type     = "ssh"
+      host     = var.proxmox_ip
+      user     = var.proxmox_user
+      password = var.proxmox_password  # Use password instead of private_key
     }
     inline = [
       "wget ${var.iso_url} -O ${var.iso_path} -v"
@@ -19,10 +17,10 @@ resource "null_resource" "create_template" {
 
   provisioner "remote-exec" {
     connection {
-      type        = "ssh"
-      host        = var.proxmox_ip
-      user        = var.proxmox_user
-      private_key = var.proxmox_private_key
+      type     = "ssh"
+      host     = var.proxmox_ip
+      user     = var.proxmox_user
+      password = var.proxmox_password  # Use password instead of private_key
     }
     inline = [
       "qm create ${var.template_id} --memory 4096 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --name template-cloud-init",
@@ -45,10 +43,10 @@ resource "null_resource" "create_vms" {
 
   provisioner "remote-exec" {
     connection {
-      type        = "ssh"
-      host        = var.proxmox_ip
-      user        = var.proxmox_user
-      private_key = var.proxmox_private_key
+      type     = "ssh"
+      host     = var.proxmox_ip
+      user     = var.proxmox_user
+      password = var.proxmox_password  # Use password instead of private_key
     }
     inline = [
       "CLONE_ID=${var.template_id}",
