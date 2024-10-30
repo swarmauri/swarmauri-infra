@@ -65,7 +65,6 @@ EOF
 
 # Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
 resource "local_file" "cloud_init_user_data_file" {
-  count    = var.vm_count
   content  = "content"
   filename = "test-filename.cfg"
 }
@@ -74,9 +73,9 @@ resource "null_resource" "cloud_init_config_files" {
   count = var.vm_count
   connection {
     type     = "ssh"
-    user     = "${var.pve_user}"
-    password = "${var.pve_password}"
-    host     = "${var.proxmox_node}-${count}"
+    user     = "test"
+    password = "${var.proxmox_password}"
+    host     = "${var.proxmox_node}-vm-"
   }
 
   provisioner "file" {
