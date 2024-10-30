@@ -16,13 +16,6 @@ jobs:
       TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
       TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
       TF_VAR_proxmox_node: ${{ secrets.PROXMOX_NODE }}
-      TF_VAR_vm_count: 3
-      TF_VAR_cores: 4
-      TF_VAR_memory: 8192
-      TF_VAR_sockets: 1
-      TF_VAR_bridge: "vmbr0"
-      TF_VAR_cloud_user: "ubuntu"
-      TF_VAR_cloud_password: ${{ secrets.CLOUD_PASSWORD }}
       TF_VAR_ssh_keys: ${{ secrets.SSH_KEYS }}
       TF_VAR_ubuntu_iso: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
       TF_VAR_proxmox_ip: ${{ secrets.PROXMOX_IP }}
