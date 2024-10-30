@@ -131,7 +131,7 @@ resource "proxmox_vm_qemu" "preprovision-test" {
   }
   disk {
     slot         = "scsi0"
-    type         = "virtio"
+    type         = "disk"
     storage      = "local-lvm"
     size         = "4G"
     backup       = true
