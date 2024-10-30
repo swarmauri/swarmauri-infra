@@ -20,21 +20,23 @@ resource "null_resource" "create_template" {
       type     = "ssh"
       host     = var.proxmox_ip
       user     = var.proxmox_user
-      password = var.proxmox_password  # Use password instead of private_key
+      password = var.proxmox_password
     }
     inline = [
       "qm create ${var.template_id} --memory 4096 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --name template-cloud-init",
       "qm importdisk ${var.template_id} ${var.iso_path} local-lvm",
       "qm set ${var.template_id} --scsi0 local-lvm:vm-${var.template_id}-disk-0",
       "qm set ${var.template_id} --cores 4 --cpu host",
-      "qm set ${var.template_id} --ide2 local-ssd:cloudinit",
+      "qm set ${var.template_id} --ide2 local-back:cloudinit",
       "qm set ${var.template_id} --boot order=scsi0",
-      "qm set ${var.template_id} --serial0 socket --vga serial0",
-      "qm set ${var.template_id} --cicustom 'user=local-ssd:snippets/template-cloud-init.yml'",
+      "qm set ${var.template_id} --serial0 socket",  # Serial for cloud-init
+      "qm set ${var.template_id} --vga std",         # Set VGA type to std for GUI boot
+      "qm set ${var.template_id} --cicustom 'user=local-back:snippets/template-cloud-init.yml'",
       "qm template ${var.template_id}"
     ]
   }
 }
+
 
 resource "null_resource" "create_vms" {
   depends_on = [null_resource.create_template]
