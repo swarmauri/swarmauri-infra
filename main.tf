@@ -27,82 +27,211 @@ resource "null_resource" "download_ubuntu_iso" {
   }
 }
 
-# Step 2: Create the Base VM Template
-resource "proxmox_vm_qemu" "base_vm" {
-  name         = "ubuntu-base-vm"
-  target_node  = var.proxmox_node
-  cores        = var.cores
-  sockets      = var.sockets
-  memory       = var.memory
-  os_type      = "cloud-init"
+/* Uses Cloud-Init options from Proxmox 5.2 */
+resource "proxmox_vm_qemu" "cloudinit-test" {
+  name        = "tftest1.xyz.com"
+  desc        = "tf description"
+  target_node = "proxmox1-xx"
 
-  # Attach ISO as a CD-ROM for base installation
-  disks {
-    ide {
-      ide2 {
-        cdrom {
-          iso = "local:iso/ubuntu-22.04-live-server-amd64.iso"
-        }
-      }
-    }
-  }
+  clone = "ci-ubuntu-template"
 
-  network {
-    model  = "virtio"
-    bridge = "vmbr0"
-  }
+  # The destination resource pool for the new VM
+  pool = "pool0"
 
-  disks {
-    scsi {
-      scsi0 {
-        size    = var.disk_sizes[0]
-      }
-    }
-  }
+  storage = "local"
+  cores   = 3
+  sockets = 1
+  memory  = 2560
+  disk_gb = 4
+  nic     = "virtio"
+  bridge  = "vmbr0"
 
-  provisioner "local-exec" {
-    command = "qm stop ${self.id}"
+  ssh_user        = "root"
+  ssh_private_key = <<EOF
+-----BEGIN RSA PRIVATE KEY-----
+private ssh key root
+-----END RSA PRIVATE KEY-----
+EOF
+
+  os_type   = "cloud-init"
+  ipconfig0 = "ip=10.0.2.99/16,gw=10.0.2.2"
+
+  sshkeys = <<EOF
+ssh-rsa AABB3NzaC1kj...key1
+ssh-rsa AABB3NzaC1kj...key2
+EOF
+
+  provisioner "remote-exec" {
+    inline = [
+      "ip a"
+    ]
   }
 }
 
-# Step 3: Clone the Base VM with Cloud-Init Disk
-resource "proxmox_vm_qemu" "vm" {
-  count        = var.vm_count
-  name         = "ubuntu-vm-${count.index + 100}"
-  target_node  = var.proxmox_node
-  clone        = proxmox_vm_qemu.base_vm.id
+# Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
+resource "local_file" "cloud_init_user_data_file" {
+  count    = var.vm_count
+  content  = templatefile("${var.working_directory}/cloud-inits/cloud-init.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.name })
+  filename = "${path.module}/files/user_data_${count.index}.cfg"
+}
 
-  cores        = var.cores
-  sockets      = var.sockets
-  memory       = var.memory
-  os_type      = "cloud-init"
-  ciuser       = var.cloud_user
-  sshkeys      = var.ssh_keys
-
-  network {
-    model  = "virtio"
-    bridge = "vmbr0"
+resource "null_resource" "cloud_init_config_files" {
+  count = var.vm_count
+  connection {
+    type     = "ssh"
+    user     = "${var.pve_user}"
+    password = "${var.pve_password}"
+    host     = "${var.pve_host}"
   }
 
-  # Attach a Cloud-Init disk as a CD-ROM
+  provisioner "file" {
+    source      = local_file.cloud_init_user_data_file[count.index].filename
+    destination = "/var/lib/vz/snippets/user_data_vm-${count.index}.yml"
+  }
+}
+
+/* Configure Cloud-Init User-Data with custom config file */
+resource "proxmox_vm_qemu" "cloudinit-test" {
+  depends_on = [
+    null_resource.cloud_init_config_files,
+  ]
+
+  name        = "ubuntu-vm-${count.index + 100}"
+  desc        = "tf description"
+  target_node = var.proxmox_node
+
+  clone = "ci-ubuntu-template"
+
+  # The destination resource pool for the new VM
+  pool = "pool0"
+
+  storage = "local"
+  cores   = var.cores
+  sockets = var.sockets
+  memory  = 2560
+  disk_gb = 4
+  nic     = "virtio"
+  bridge  = "vmbr0"
+
+  ssh_user        = "root"
+  ssh_private_key = <<EOF
+-----BEGIN RSA PRIVATE KEY-----
+private ssh key root
+-----END RSA PRIVATE KEY-----
+EOF
+
+  os_type   = "cloud-init"
+  ipconfig0 = "ip=10.0.2.99/16,gw=10.0.2.2"
+
+  /*
+    sshkeys and other User-Data parameters are specified with a custom config file.
+    In this example each VM has its own config file, previously generated and uploaded to
+    the snippets folder in the local storage in the Proxmox VE server.
+  */
+  cicustom                = "user=local:snippets/user_data_vm-${count.index}.yml"
+  /* Create the Cloud-Init drive on the "local-lvm" storage */
   disks {
-    scsi {
-      scsi0 {
-        cdrom {
-          iso = "local:cloudinit"
+    ide {
+      ide3 {
+        cloudinit {
+          storage = "local-lvm"
         }
       }
     }
   }
 
-  # Set static IP and gateway through cloud-init IP configuration
-  ipconfig0 = "ip=192.168.1.${100 + count.index}/24,gw=192.168.1.1"
+  provisioner "remote-exec" {
+    inline = [
+      "ip a"
+    ]
+  }
+}
 
-  disks {
-    scsi {
-      scsi1 {
-        size    = var.disk_sizes[0]
-      }
-    }
+/* Uses custom eth1 user-net SSH portforward */
+resource "proxmox_vm_qemu" "preprovision-test" {
+  name        = "ubuntu-vm-${count.index + 100}"
+  desc        = "tf description"
+  target_node = var.proxmox_node
+
+  clone = "terraform-ubuntu1404-template"
+
+  # The destination resource pool for the new VM
+  pool = "pool0"
+
+  cores    = var.cores
+  sockets  = var.sockets
+  # Same CPU as the Physical host, possible to add cpu flags
+  # Ex: "host,flags=+md-clear;+pcid;+spec-ctrl;+ssbd;+pdpe1gb"
+  cpu      = "host"
+  numa     = false
+  memory   = 2560
+  scsihw   = "lsi"
+  # Boot from hard disk (c), CD-ROM (d), network (n)
+  boot     = "cdn"
+  # It's possible to add this type of material and use it directly
+  # Possible values are: network,disk,cpu,memory,usb
+  hotplug  = "network,disk,usb"
+  # Default boot disk
+  bootdisk = "virtio0"
+  # HA, you need to use a shared disk for this feature (ex: rbd)
+  hastate  = ""
+
+  #Display
+  vga {
+    type   = "std"
+    #Between 4 and 512, ignored if type is defined to serial
+    memory = 4
+  }
+
+  network {
+    id    = 0
+    model = "virtio"
+  }
+  network {
+    id     = 1
+    model  = "virtio"
+    bridge = "vmbr1"
+  }
+  disk {
+    id           = 0
+    type         = "virtio"
+    storage      = "local-lvm"
+    storage_type = "lvm"
+    size         = "4G"
+    backup       = true
+  }
+  # Serial interface of type socket is used by xterm.js
+  # You will need to configure your guest system before being able to use it
+  serial {
+    id   = 0
+    type = "socket"
+  }
+  preprovision    = true
+  ssh_forward_ip  = "10.0.0.1"
+  ssh_user        = "terraform"
+  ssh_private_key = <<EOF
+-----BEGIN RSA PRIVATE KEY-----
+private ssh key terraform
+-----END RSA PRIVATE KEY-----
+EOF
+
+  os_type           = "ubuntu"
+  os_network_config = <<EOF
+auto eth0
+iface eth0 inet dhcp
+EOF
+
+  connection {
+    type        = "ssh"
+    user        = self.ssh_user
+    private_key = self.ssh_private_key
+    host        = self.ssh_host
+    port        = self.ssh_port
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "ip a"
+    ]
   }
 }
