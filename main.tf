@@ -37,14 +37,9 @@ resource "proxmox_vm_qemu" "cloudinit-test" {
 
   # The destination resource pool for the new VM
   pool = "pool0"
-
-  storage = "local"
   cores   = 3
   sockets = 1
   memory  = 2560
-  disk_gb = 4
-  nic     = "virtio"
-  bridge  = "vmbr0"
 
   ssh_user        = "root"
   ssh_private_key = <<EOF
@@ -71,7 +66,7 @@ EOF
 # Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
 resource "local_file" "cloud_init_user_data_file" {
   count    = var.vm_count
-  content  = templatefile("${path.module}/cloud-inits/cloud-init.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.name })
+  content  = templatefile("${path.module}/cloud-inits/cloud-init.cloud_config.tftpl", { ssh_key ="key", hostname = "hostname-test01" })
   filename = "${path.module}/files/user_data_${count.index}.cfg"
 }
 
@@ -94,7 +89,7 @@ resource "null_resource" "cloud_init_config_files" {
 
 /* Uses custom eth1 user-net SSH portforward */
 resource "proxmox_vm_qemu" "preprovision-test" {
-  name        = "ubuntu-vm-${count.index + 100}"
+  name        = "ppt-test"
   desc        = "tf description"
   target_node = var.proxmox_node
 
