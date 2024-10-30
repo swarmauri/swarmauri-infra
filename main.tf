@@ -27,7 +27,7 @@ resource "null_resource" "create_template" {
       "qm importdisk ${var.template_id} ${var.iso_path} local-lvm",
       "qm set ${var.template_id} --scsi0 local-lvm:vm-${var.template_id}-disk-0",
       "qm set ${var.template_id} --cores 4 --cpu host",
-      "qm set ${var.template_id} --ide2 local-back:cloudinit",
+      "qm set ${var.template_id} --ide2 local-ssd:cloudinit",
       "qm set ${var.template_id} --boot order=scsi0",
       "qm set ${var.template_id} --serial0 socket --vga serial0",
       "qm set ${var.template_id} --cicustom 'user=local-back:snippets/template-cloud-init.yml'",
