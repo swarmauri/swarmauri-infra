@@ -29,9 +29,9 @@ resource "null_resource" "download_ubuntu_iso" {
 
 /* Uses Cloud-Init options from Proxmox 5.2 */
 resource "proxmox_vm_qemu" "cloudinit-test" {
-  name        = "tftest1.xyz.com"
+  name        = "ubuntu-vm-${count.index + 100}"
   desc        = "tf description"
-  target_node = "proxmox1-xx"
+  target_node = var.proxmox_node
 
   clone = "ci-ubuntu-template"
 
