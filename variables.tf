@@ -40,13 +40,13 @@ variable "vm_ids" {
 
 variable "vm_names" {
   type        = list(string)
-  default     = ["vm-clone-1", "vm-clone-2", "vm-clone-3"]
+  default     = ["stybk", "clsrm", "btnt", "rgplt"]
   description = "List of VM names for each clone"
 }
 
 variable "ips" {
   type        = list(string)
-  default     = ["172.81.41.141/28", "172.81.41.142/28", "172.81.41.143/28"]
+  default     = ["149.255.38.122/28", "149.255.38.123/28", "149.255.38.124/28"]
   description = "List of unique IP addresses for each VM"
 }
 
