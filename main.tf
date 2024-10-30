@@ -90,62 +90,7 @@ resource "null_resource" "cloud_init_config_files" {
   }
 }
 
-/* Configure Cloud-Init User-Data with custom config file */
-resource "proxmox_vm_qemu" "cloudinit-test" {
-  depends_on = [
-    null_resource.cloud_init_config_files,
-  ]
 
-  name        = "ubuntu-vm-${count.index + 100}"
-  desc        = "tf description"
-  target_node = var.proxmox_node
-
-  clone = "ci-ubuntu-template"
-
-  # The destination resource pool for the new VM
-  pool = "pool0"
-
-  storage = "local"
-  cores   = var.cores
-  sockets = var.sockets
-  memory  = 2560
-  disk_gb = 4
-  nic     = "virtio"
-  bridge  = "vmbr0"
-
-  ssh_user        = "root"
-  ssh_private_key = <<EOF
------BEGIN RSA PRIVATE KEY-----
-private ssh key root
------END RSA PRIVATE KEY-----
-EOF
-
-  os_type   = "cloud-init"
-  ipconfig0 = "ip=10.0.2.99/16,gw=10.0.2.2"
-
-  /*
-    sshkeys and other User-Data parameters are specified with a custom config file.
-    In this example each VM has its own config file, previously generated and uploaded to
-    the snippets folder in the local storage in the Proxmox VE server.
-  */
-  cicustom                = "user=local:snippets/user_data_vm-${count.index}.yml"
-  /* Create the Cloud-Init drive on the "local-lvm" storage */
-  disks {
-    ide {
-      ide3 {
-        cloudinit {
-          storage = "local-lvm"
-        }
-      }
-    }
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "ip a"
-    ]
-  }
-}
 
 /* Uses custom eth1 user-net SSH portforward */
 resource "proxmox_vm_qemu" "preprovision-test" {
