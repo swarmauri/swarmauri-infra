@@ -6,9 +6,11 @@ variable "proxmox_user" {
   description = "Proxmox user with SSH access"
 }
 
-variable "proxmox_private_key" {
-  description = "SSH private key for accessing Proxmox"
+variable "proxmox_password" {
+  description = "Password for Proxmox user SSH access"
+  sensitive   = true
 }
+
 
 variable "iso_url" {
   default     = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
