@@ -76,7 +76,7 @@ resource "null_resource" "cloud_init_config_files" {
     type     = "ssh"
     user     = "${var.pve_user}"
     password = "${var.pve_password}"
-    host     = "${var.pve_host}"
+    host     = "${var.proxmox_node}-${count}"
   }
 
   provisioner "file" {
