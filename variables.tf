@@ -18,7 +18,7 @@ variable "iso_url" {
 }
 
 variable "iso_path" {
-  default     = "/mnt/pve/local-back/template/iso/jammy-server-cloudimg-amd64.qcow2"
+  default     = "/mnt/pve/local-ssd/template/iso/jammy-server-cloudimg-amd64.qcow2"
   description = "Path where the ISO will be stored on the Proxmox server"
 }
 
@@ -57,6 +57,6 @@ variable "gateways" {
 }
 
 variable "ssh_public_key_path" {
-  default     = "/mnt/local-back/private/cobycloud.pub"
+  default     = "/mnt/pve/local-ssd/private/cobycloud.pub"
   description = "Path to the SSH public key"
 }
