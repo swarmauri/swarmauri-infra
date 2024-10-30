@@ -79,7 +79,7 @@ resource "null_resource" "cloud_init_config_files" {
   }
 
   provisioner "file" {
-    source      = local_file.cloud_init_user_data_file[count.index].filename
+    source      = local_file.cloud_init_user_data_file.filename
     destination = "/var/lib/vz/snippets/user_data_vm-${count.index}.yml"
   }
 }
