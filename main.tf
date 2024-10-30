@@ -71,7 +71,7 @@ EOF
 # Modify path for templatefile and use the recommended extension of .tftpl for syntax hylighting in code editors.
 resource "local_file" "cloud_init_user_data_file" {
   count    = var.vm_count
-  content  = templatefile("${var.working_directory}/cloud-inits/cloud-init.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.name })
+  content  = templatefile("${path.module}/cloud-inits/cloud-init.cloud_config.tftpl", { ssh_key = var.ssh_public_key, hostname = var.name })
   filename = "${path.module}/files/user_data_${count.index}.cfg"
 }
 
