@@ -26,6 +26,7 @@ resource "null_resource" "create_template" {
       "qm create ${var.template_id} --memory 4096 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci --name template-cloud-init",
       "qm importdisk ${var.template_id} ${var.iso_path} local-lvm",
       "qm set ${var.template_id} --scsi0 local-lvm:vm-${var.template_id}-disk-0",
+      "qm set ${var.template_id} --scsi1 local-ssd:vm-${var.template_id}-disk-1",
       "qm set ${var.template_id} --cores 4 --cpu host",
       "qm set ${var.template_id} --ide2 local-back:cloudinit",
       "qm set ${var.template_id} --boot order=scsi0",
