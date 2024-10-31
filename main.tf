@@ -67,8 +67,8 @@ resource "null_resource" "create_vms" {
       "qm set \"$VM_ID\" --cicustom 'user=local-ssd:snippets/${var.iso_templates[count.index]}'",
 
       # Resize the disk for the new VM
-      "qm resize \"$VM_ID\" scsi0 30G",
-      "qm resize \"$VM_ID\" scsi1 30G",
+      "qm resize \"$VM_ID\" scsi0 ${var.scsi0_size[count.index]}",
+      "qm resize \"$VM_ID\" scsi1 ${var.scsi1_size[count.index]}",
       
       # Start the VM
       "qm start \"$VM_ID\""
