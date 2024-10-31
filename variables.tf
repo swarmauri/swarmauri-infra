@@ -44,6 +44,12 @@ variable "vm_names" {
   description = "List of VM names for each clone"
 }
 
+variable "iso_templates" {
+  type        = list(string)
+  default     = ["nairobi-cloud-init.yml", "template-cloud-init.yml", "template-cloud-init.yml", "nairobi-cloud-init.yml"]
+  description = "List of VM names for each clone"
+}
+
 variable "ips" {
   type        = list(string)
   default     = ["149.255.38.123/28", "149.255.38.124/28", "149.255.38.125/28", "149.255.38.126/28"]
