@@ -53,7 +53,7 @@ variable "iso_templates" {
 variable "scsi0_size" {
   type        = list(string)
   default     = ["80G", "80G", "80G", "80G"]
-  description = "List of sizes for scsi1 disk"
+  description = "List of sizes for scsi0 disk"
 }
 
 variable "scsi1_size" {
