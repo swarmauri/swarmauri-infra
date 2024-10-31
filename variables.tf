@@ -58,7 +58,7 @@ variable "ips" {
 
 variable "gateways" {
   type        = list(string)
-  default     = ["172.81.41.129", "172.81.41.129", "172.81.41.129", "172.81.41.129"]
+  default     = ["149.255.38.121", "149.255.38.121", "149.255.38.121", "149.255.38.121"]
   description = "List of gateways for each VM"
 }
 
