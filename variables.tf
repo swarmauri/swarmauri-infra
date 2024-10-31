@@ -47,15 +47,28 @@ variable "vm_names" {
 variable "iso_templates" {
   type        = list(string)
   default     = ["nairobi-cloud-init.yml", "template-cloud-init.yml", "template-cloud-init.yml", "nairobi-cloud-init.yml"]
-  description = "List of VM names for each clone"
+  description = "List of cloud-init templates"
 }
+
+variable "scsi0_size" {
+  type        = list(string)
+  default     = ["80G", "80G", "80G", "80G"]
+  description = "List of sizes for scsi1 disk"
+}
+
+variable "scsi1_size" {
+  type        = list(string)
+  default     = ["50G", "50G", "50G", "50G"]
+  description = "List of sizes for scsi1 disk"
+}
+
 
 variable "ips" {
   type        = list(string)
   default     = ["149.255.38.123/28", "149.255.38.124/28", "149.255.38.125/28", "149.255.38.126/28"]
   description = "List of unique IP addresses for each VM"
 }
-
+scsi0_size
 variable "gateways" {
   type        = list(string)
   default     = ["149.255.38.121", "149.255.38.121", "149.255.38.121", "149.255.38.121"]
