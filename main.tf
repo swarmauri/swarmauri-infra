@@ -64,7 +64,8 @@ resource "null_resource" "create_vms" {
       "qm set \"$VM_ID\" --numa 1 --hotplug=memory,cpu,disk,usb,network --onboot 1 --agent 1",
       "qm set \"$VM_ID\" --ipconfig0 ip=\"$IP\",gw=\"$GW\" --nameserver 8.8.4.4",
       "qm set \"$VM_ID\" --sshkeys ${var.ssh_public_key_path}",
-      
+      "qm set \"$VM_ID\" --cicustom ${var.iso_path[count.index]}",
+
       # Resize the disk for the new VM
       "qm resize \"$VM_ID\" scsi0 30G",
       "qm resize \"$VM_ID\" scsi1 30G",
